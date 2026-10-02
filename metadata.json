@@ -1,0 +1,6 @@
+{
+  "name": "Nusantara MarineFlow - Shipping & Fleet Management",
+  "description": "Sistem Manajemen Perusahaan Pelayaran Nasional: Monitoring Armada Kapal, Rute & Jadwal Pelayaran, Manifest Kargo, dan Kru Maritim dengan Firebase Real-time Database.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

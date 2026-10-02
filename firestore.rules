@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidVessel(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 100
+        && data.imoNumber is string && data.imoNumber.size() >= 7 && data.imoNumber.size() <= 20
+        && data.type is string && data.type.size() <= 50
+        && data.capacityDwt is number && data.capacityDwt >= 0
+        && data.status in ['Sailing', 'Berthed', 'Anchored', 'Maintenance'];
+    }
+
+    function isValidVoyage(data) {
+      return data.voyageNumber is string && data.voyageNumber.size() >= 3 && data.voyageNumber.size() <= 50
+        && data.vesselName is string && data.vesselName.size() >= 2 && data.vesselName.size() <= 100
+        && data.originPort is string && data.originPort.size() >= 2 && data.originPort.size() <= 100
+        && data.destinationPort is string && data.destinationPort.size() >= 2 && data.destinationPort.size() <= 100
+        && data.status in ['Scheduled', 'In Transit', 'Arrived', 'Completed', 'Delayed'];
+    }
+
+    function isValidCargo(data) {
+      return data.billOfLading is string && data.billOfLading.size() >= 4 && data.billOfLading.size() <= 50
+        && data.shipper is string && data.shipper.size() >= 2 && data.shipper.size() <= 120
+        && data.consignee is string && data.consignee.size() >= 2 && data.consignee.size() <= 120
+        && data.cargoType is string && data.cargoType.size() <= 50
+        && data.quantity is number && data.quantity >= 0
+        && data.weightTons is number && data.weightTons >= 0
+        && data.status in ['Pending Loading', 'Loaded', 'In Transit', 'Discharged', 'Delivered'];
+    }
+
+    function isValidCrew(data) {
+      return data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 100
+        && data.seamanBookNo is string && data.seamanBookNo.size() >= 4 && data.seamanBookNo.size() <= 50
+        && data.rank is string && data.rank.size() <= 60
+        && data.status in ['On Duty', 'On Leave', 'Standby'];
+    }
+
+    match /vessels/{vesselId} {
+      allow read: if true;
+      allow create: if isValidId(vesselId) && isValidVessel(request.resource.data);
+      allow update: if isValidId(vesselId) && isValidVessel(request.resource.data);
+      allow delete: if isValidId(vesselId);
+    }
+
+    match /voyages/{voyageId} {
+      allow read: if true;
+      allow create: if isValidId(voyageId) && isValidVoyage(request.resource.data);
+      allow update: if isValidId(voyageId) && isValidVoyage(request.resource.data);
+      allow delete: if isValidId(voyageId);
+    }
+
+    match /cargo/{cargoId} {
+      allow read: if true;
+      allow create: if isValidId(cargoId) && isValidCargo(request.resource.data);
+      allow update: if isValidId(cargoId) && isValidCargo(request.resource.data);
+      allow delete: if isValidId(cargoId);
+    }
+
+    match /crew/{crewId} {
+      allow read: if true;
+      allow create: if isValidId(crewId) && isValidCrew(request.resource.data);
+      allow update: if isValidId(crewId) && isValidCrew(request.resource.data);
+      allow delete: if isValidId(crewId);
+    }
+  }
+}
